@@ -31,6 +31,7 @@
                 <a href="{{ route('users.index') }}">Users</a>
                 <a href="{{ route('products.index') }}">Products</a>
                 <a href="{{ route('categories.index') }}">Categories</a>
+                <a href="{{ route('seeders.index') }}">Seeders</a>
                 <a href="{{ route('profile') }}">Profile</a>
             </nav>
         </div>

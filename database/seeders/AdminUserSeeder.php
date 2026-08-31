@@ -1,25 +1,23 @@
 <?php
-  
+
 namespace Database\Seeders;
-  
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
+
 use App\Models\User;
-  
+use Illuminate\Database\Seeder;
+
 class AdminUserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         User::firstOrCreate(
-            ['email' => 'admin@gmail.com'],
+            [
+                'email' => 'admin@gmail.com',
+            ],
             [
                 'name' => 'Hardik',
                 'phone' => '+91 98765 43210',
                 'status' => 'active',
-                'password' => bcrypt('123456'),
+                'password' => '123456',
             ]
         );
     }

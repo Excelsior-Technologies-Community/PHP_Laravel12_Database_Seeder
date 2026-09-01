@@ -12,6 +12,7 @@ use Database\Seeders\ProductSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class SeederManagementController extends Controller
@@ -19,7 +20,7 @@ class SeederManagementController extends Controller
     /**
      * Display the seeder management dashboard.
      */
-    public function index()
+    public function index(Request $request)
     {
         $statistics = [
             'users' => User::count(),
@@ -45,7 +46,31 @@ class SeederManagementController extends Controller
             ],
         ];
 
-        $recentRuns = SeederRun::latest()->take(10)->get();
+        /*
+        |--------------------------------------------------------------------------
+        | Seeder History Search + Status Filter
+        |--------------------------------------------------------------------------
+        */
+
+        $historyQuery = SeederRun::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $historyQuery->where(function ($query) use ($search) {
+                $query->where('seeder_name', 'like', "%{$search}%")
+                    ->orWhere('message', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $historyQuery->where('status', $request->status);
+        }
+
+        $recentRuns = $historyQuery
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return view('seeders.index', compact(
             'statistics',
@@ -86,7 +111,10 @@ class SeederManagementController extends Controller
         /*
          * ProductSeeder requires categories to exist.
          */
-        if ($validated['seeder'] === 'product' && Category::count() === 0) {
+        if (
+            $validated['seeder'] === 'product'
+            && Category::count() === 0
+        ) {
             return redirect()
                 ->route('seeders.index')
                 ->with(
@@ -124,7 +152,9 @@ class SeederManagementController extends Controller
                     'success',
                     $selectedSeeder['name'] . ' executed successfully.'
                 );
+
         } catch (Throwable $e) {
+
             $run->update([
                 'status' => 'failed',
                 'message' => $e->getMessage(),
@@ -152,10 +182,13 @@ class SeederManagementController extends Controller
         ]);
 
         try {
+
             DB::transaction(function () {
+
                 Artisan::call('db:seed', [
                     '--force' => true,
                 ]);
+
             });
 
             $output = trim(Artisan::output());
@@ -172,7 +205,9 @@ class SeederManagementController extends Controller
                     'success',
                     'All seeders executed successfully.'
                 );
+
         } catch (Throwable $e) {
+
             $run->update([
                 'status' => 'failed',
                 'message' => $e->getMessage(),
@@ -190,10 +225,6 @@ class SeederManagementController extends Controller
 
     /**
      * Reset application data and reseed everything.
-     *
-     * This does NOT run migrate:fresh.
-     * It only removes records from the application's
-     * users, categories and products tables.
      */
     public function resetAndReseed(Request $request)
     {
@@ -205,9 +236,13 @@ class SeederManagementController extends Controller
         ]);
 
         if ($validated['confirmation'] !== 'RESET') {
+
             return redirect()
                 ->route('seeders.index')
-                ->with('error', 'Reset confirmation failed.');
+                ->with(
+                    'error',
+                    'Reset confirmation failed.'
+                );
         }
 
         $run = SeederRun::create([
@@ -217,29 +252,19 @@ class SeederManagementController extends Controller
         ]);
 
         try {
+
             DB::transaction(function () {
-                /*
-                 * Delete dependent data first.
-                 * Products depend on categories.
-                 */
+
                 Product::query()->delete();
 
                 Category::query()->delete();
 
                 User::query()->delete();
 
-                /*
-                 * Run the complete DatabaseSeeder.
-                 *
-                 * DatabaseSeeder creates:
-                 * - factory users
-                 * - categories
-                 * - products
-                 * - admin user
-                 */
                 Artisan::call('db:seed', [
                     '--force' => true,
                 ]);
+
             });
 
             $output = trim(Artisan::output());
@@ -256,7 +281,9 @@ class SeederManagementController extends Controller
                     'success',
                     'Database reset and reseeded successfully.'
                 );
+
         } catch (Throwable $e) {
+
             $run->update([
                 'status' => 'failed',
                 'message' => $e->getMessage(),
@@ -271,4 +298,115 @@ class SeederManagementController extends Controller
                 );
         }
     }
+
+    /**
+     * Export Seeder History as CSV.
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $query = SeederRun::query();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Apply same search filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search')) {
+
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where(
+                    'seeder_name',
+                    'like',
+                    "%{$search}%"
+                )->orWhere(
+                    'message',
+                    'like',
+                    "%{$search}%"
+                );
+
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Apply same status filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('status')) {
+            $query->where(
+                'status',
+                $request->status
+            );
+        }
+
+        $runs = $query
+            ->latest()
+            ->get();
+
+        $filename = 'seeder-history-' . now()->format('Y-m-d-H-i-s') . '.csv';
+
+        return response()->streamDownload(function () use ($runs) {
+
+            $handle = fopen('php://output', 'w');
+
+            /*
+            |--------------------------------------------------------------------------
+            | CSV Header
+            |--------------------------------------------------------------------------
+            */
+
+            fputcsv($handle, [
+                'ID',
+                'Seeder',
+                'Status',
+                'Started At',
+                'Completed At',
+                'Message',
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | CSV Rows
+            |--------------------------------------------------------------------------
+            */
+
+            foreach ($runs as $run) {
+
+                fputcsv($handle, [
+                    $run->id,
+                    $run->seeder_name,
+                    $run->status,
+                    $run->started_at?->format('Y-m-d H:i:s'),
+                    $run->completed_at?->format('Y-m-d H:i:s'),
+                    $run->message,
+                ]);
+            }
+
+            fclose($handle);
+
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    /**
+     * Clear Seeder History.
+     */
+    public function clearHistory()
+    {
+        SeederRun::query()->delete();
+
+        return redirect()
+            ->route('seeders.index')
+            ->with(
+                'success',
+                'Seeder history cleared successfully.'
+            );
+    }
 }
+

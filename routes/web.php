@@ -17,6 +17,18 @@ Route::get('/dashboard', [AdminController::class, 'dashboard'])
 
 Route::resource('users', UserController::class);
 
+/*
+|--------------------------------------------------------------------------
+| Product Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/products/export', [ProductController::class, 'export'])
+    ->name('products.export');
+
+Route::post('/products/bulk-delete', [ProductController::class, 'bulkDelete'])
+    ->name('products.bulk-delete');
+
 Route::resource('products', ProductController::class);
 
 Route::resource('categories', CategoryController::class);
@@ -44,3 +56,15 @@ Route::post('/seeders/seed-all', [SeederManagementController::class, 'seedAll'])
 
 Route::post('/seeders/reset-reseed', [SeederManagementController::class, 'resetAndReseed'])
     ->name('seeders.reset-reseed');
+
+/*
+|--------------------------------------------------------------------------
+| Seeder History
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/seeders/export', [SeederManagementController::class, 'export'])
+    ->name('seeders.export');
+
+Route::delete('/seeders/clear-history', [SeederManagementController::class, 'clearHistory'])
+    ->name('seeders.clear-history');

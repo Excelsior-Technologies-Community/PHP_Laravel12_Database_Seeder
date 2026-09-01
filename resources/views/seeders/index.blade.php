@@ -1,13 +1,14 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
 
+
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+        content="width=device-width, initial-scale=1.0">
 
     <title>Seeder Management</title>
 
@@ -24,7 +25,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1250px;
             margin: 32px auto;
             padding: 0 20px;
         }
@@ -49,12 +50,14 @@
             font-weight: 600;
         }
 
+        nav a:hover {
+            text-decoration: underline;
+        }
+
         .grid {
             display: grid;
-            grid-template-columns: repeat(
-                auto-fit,
-                minmax(220px, 1fr)
-            );
+            grid-template-columns: repeat(auto-fit,
+                    minmax(200px, 1fr));
             gap: 20px;
         }
 
@@ -105,10 +108,8 @@
 
         .seeder-grid {
             display: grid;
-            grid-template-columns: repeat(
-                auto-fit,
-                minmax(280px, 1fr)
-            );
+            grid-template-columns: repeat(auto-fit,
+                    minmax(280px, 1fr));
             gap: 20px;
         }
 
@@ -157,10 +158,49 @@
             background: #dc2626;
         }
 
+        .btn.secondary {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .btn.blue-btn {
+            background: #2563eb;
+        }
+
         .actions {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+        }
+
+        .history-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input,
+        select {
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #2563eb;
         }
 
         table {
@@ -221,18 +261,76 @@
         }
 
         .reset-form input {
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
             min-width: 220px;
         }
 
         .empty {
             color: #6b7280;
-            padding: 15px 0;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pagination-wrapper {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .pagination-wrapper nav {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .pagination-wrapper a,
+        .pagination-wrapper span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 38px;
+            min-height: 38px;
+            padding: 0 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            text-decoration: none;
+            background: white;
+            color: #111827;
+        }
+
+        .pagination-wrapper .active span {
+            background: #111827;
+            color: white;
+            border-color: #111827;
+        }
+
+        .pagination-wrapper .disabled span {
+            opacity: 0.45;
+        }
+
+        .message-text {
+            max-width: 400px;
+            word-break: break-word;
         }
 
         @media (max-width: 768px) {
+
             nav {
                 width: 100%;
             }
@@ -246,88 +344,193 @@
                 display: block;
                 overflow-x: auto;
             }
+
+            .filter-form {
+                width: 100%;
+            }
+
+            .filter-form input,
+            .filter-form select {
+                width: 100%;
+            }
+
+            .filter-form .btn {
+                width: 100%;
+            }
+
+            .history-toolbar {
+                align-items: stretch;
+            }
         }
     </style>
+
 </head>
 
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <div class="topbar">
+  
+        {{-- =========================================================
+     HEADER
+========================================================== --}}
 
-        <h2>Seeder Management</h2>
+        <div class="topbar">
 
-        <nav>
-            <a href="{{ route('dashboard') }}">
-                Dashboard
-            </a>
+            <h2>Seeder Management</h2>
 
-            <a href="{{ route('users.index') }}">
-                Users
-            </a>
+            <nav>
 
-            <a href="{{ route('products.index') }}">
-                Products
-            </a>
+                <a href="{{ route('dashboard') }}">
+                    Dashboard
+                </a>
 
-            <a href="{{ route('categories.index') }}">
-                Categories
-            </a>
+                <a href="{{ route('users.index') }}">
+                    Users
+                </a>
 
-            <a href="{{ route('profile') }}">
-                Profile
-            </a>
-        </nav>
+                <a href="{{ route('products.index') }}">
+                    Products
+                </a>
 
-    </div>
+                <a href="{{ route('categories.index') }}">
+                    Categories
+                </a>
+
+                <a href="{{ route('seeders.index') }}">
+                    Seeders
+                </a>
+
+                <a href="{{ route('profile') }}">
+                    Profile
+                </a>
+
+            </nav>
+
+        </div>
 
 
-    {{-- Success message --}}
-    @if(session('success'))
+        {{-- =========================================================
+     FLASH MESSAGES
+========================================================== --}}
+
+        @if(session('success'))
+
         <div class="message success">
             {{ session('success') }}
         </div>
-    @endif
+
+        @endif
 
 
-    {{-- Error message --}}
-    @if(session('error'))
+        @if(session('error'))
+
         <div class="message error">
             {{ session('error') }}
         </div>
-    @endif
+
+        @endif
 
 
-    {{-- Database statistics --}}
-    <div class="grid">
+        {{-- =========================================================
+     DATABASE STATISTICS
+========================================================== --}}
 
-        <div class="card">
-            <small>Total Users</small>
-            <h3>{{ $statistics['users'] }}</h3>
+        <div class="grid">
+
+            <div class="card">
+
+                <div class="stat-label">
+                    Total Users
+                </div>
+
+                <div class="stat-value">
+                    {{ $statistics['users'] }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="stat-label">
+                    Total Categories
+                </div>
+
+                <div class="stat-value">
+                    {{ $statistics['categories'] }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="stat-label">
+                    Total Products
+                </div>
+
+                <div class="stat-value">
+                    {{ $statistics['products'] }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="stat-label">
+                    Seeder Runs
+                </div>
+
+                <div class="stat-value">
+                    {{ $totalSeederRuns ?? $recentRuns->count() }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="stat-label">
+                    Successful Runs
+                </div>
+
+                <div class="stat-value">
+                    {{ $successfulRuns ?? 0 }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="stat-label">
+                    Failed Runs
+                </div>
+
+                <div class="stat-value">
+                    {{ $failedRuns ?? 0 }}
+                </div>
+
+            </div>
+
         </div>
 
-        <div class="card">
-            <small>Total Categories</small>
-            <h3>{{ $statistics['categories'] }}</h3>
-        </div>
 
-        <div class="card">
-            <small>Total Products</small>
-            <h3>{{ $statistics['products'] }}</h3>
-        </div>
+        {{-- =========================================================
+     AVAILABLE SEEDERS
+========================================================== --}}
 
-    </div>
+        <div class="panel">
 
+            <h3>
+                Available Seeders
+            </h3>
 
-    {{-- Seeder controls --}}
-    <div class="panel">
+            <div class="seeder-grid">
 
-        <h3>Available Seeders</h3>
-
-        <div class="seeder-grid">
-
-            @foreach($seeders as $seeder)
+                @foreach($seeders as $seeder)
 
                 <div class="seeder-card">
 
@@ -339,260 +542,452 @@
                         {{ $seeder['description'] }}
                     </p>
 
+
                     @if($seeder['name'] === 'Admin User Seeder')
 
-                        <form
-                            method="POST"
-                            action="{{ route('seeders.run') }}"
-                        >
-                            @csrf
+                    <form
+                        method="POST"
+                        action="{{ route('seeders.run') }}">
 
-                            <input
-                                type="hidden"
-                                name="seeder"
-                                value="admin"
-                            >
+                        @csrf
 
-                            <button
-                                type="submit"
-                                class="btn"
-                            >
-                                Run Seeder
-                            </button>
-                        </form>
+                        <input
+                            type="hidden"
+                            name="seeder"
+                            value="admin">
+
+                        <button
+                            type="submit"
+                            class="btn">
+                            Run Seeder
+                        </button>
+
+                    </form>
+
 
                     @elseif($seeder['name'] === 'Category Seeder')
 
-                        <form
-                            method="POST"
-                            action="{{ route('seeders.run') }}"
-                        >
-                            @csrf
+                    <form
+                        method="POST"
+                        action="{{ route('seeders.run') }}">
 
-                            <input
-                                type="hidden"
-                                name="seeder"
-                                value="category"
-                            >
+                        @csrf
 
-                            <button
-                                type="submit"
-                                class="btn"
-                            >
-                                Run Seeder
-                            </button>
-                        </form>
+                        <input
+                            type="hidden"
+                            name="seeder"
+                            value="category">
+
+                        <button
+                            type="submit"
+                            class="btn">
+                            Run Seeder
+                        </button>
+
+                    </form>
+
 
                     @elseif($seeder['name'] === 'Product Seeder')
 
-                        <form
-                            method="POST"
-                            action="{{ route('seeders.run') }}"
-                        >
-                            @csrf
+                    <form
+                        method="POST"
+                        action="{{ route('seeders.run') }}">
 
-                            <input
-                                type="hidden"
-                                name="seeder"
-                                value="product"
-                            >
+                        @csrf
 
-                            <button
-                                type="submit"
-                                class="btn"
-                            >
-                                Run Seeder
-                            </button>
-                        </form>
+                        <input
+                            type="hidden"
+                            name="seeder"
+                            value="product">
+
+                        <button
+                            type="submit"
+                            class="btn">
+                            Run Seeder
+                        </button>
+
+                    </form>
 
                     @endif
 
                 </div>
 
-            @endforeach
+                @endforeach
+
+            </div>
+
+
+            <div style="margin-top: 25px;">
+
+                <form
+                    method="POST"
+                    action="{{ route('seeders.seed-all') }}">
+
+                    @csrf
+
+                    <button
+                        type="submit"
+                        class="btn success-btn"
+                        onclick="return confirm('Run all database seeders?')">
+                        Run All Seeders
+                    </button>
+
+                </form>
+
+            </div>
 
         </div>
 
 
-        <div style="margin-top: 25px;">
+        {{-- =========================================================
+     RESET AND RESEED
+========================================================== --}}
+
+        <div class="panel">
+
+            <h3>
+                Reset &amp; Reseed Database
+            </h3>
+
+            <div class="warning-box">
+
+                <strong>Warning:</strong>
+
+                This operation deletes all records from:
+
+                <strong>users</strong>,
+                <strong>categories</strong>
+                and
+                <strong>products</strong>.
+
+                It then runs the complete
+                <strong>DatabaseSeeder</strong>
+                again.
+
+                <br><br>
+
+                This does <strong>not</strong> run
+                <code>migrate:fresh</code>
+                and does not delete your database tables.
+
+            </div>
+
 
             <form
                 method="POST"
-                action="{{ route('seeders.seed-all') }}"
-            >
+                action="{{ route('seeders.reset-reseed') }}"
+                class="reset-form"
+                onsubmit="return confirm('WARNING: This will delete all users, categories and products. Continue?')">
+
                 @csrf
+
+                <input
+                    type="text"
+                    name="confirmation"
+                    placeholder="Type RESET"
+                    required>
 
                 <button
                     type="submit"
-                    class="btn success-btn"
-                    onclick="
-                        return confirm(
-                            'Run all database seeders?'
-                        )
-                    "
-                >
-                    Run All Seeders
+                    class="btn danger-btn">
+                    Reset &amp; Reseed
                 </button>
 
             </form>
 
         </div>
 
-    </div>
+
+        {{-- =========================================================
+     SEEDER HISTORY
+========================================================== --}}
+
+        <div class="panel">
+
+            <div class="history-toolbar">
+
+                <h3 style="margin: 0;">
+                    Seeder Execution History
+                </h3>
 
 
-    {{-- Reset and reseed --}}
-    <div class="panel">
+                <div class="export-buttons">
 
-        <h3>Reset &amp; Reseed Database</h3>
+                    {{-- Refresh --}}
 
-        <div class="warning-box">
-
-            <strong>Warning:</strong>
-
-            This operation deletes all records from:
-
-            <strong>
-                users
-            </strong>,
-            <strong>
-                categories
-            </strong>
-            and
-            <strong>
-                products
-            </strong>.
-
-            It then runs the complete
-            <strong>DatabaseSeeder</strong>
-            again.
-
-            <br><br>
-
-            This does <strong>not</strong> run
-            <code>migrate:fresh</code>
-            and does not delete your database tables.
-
-        </div>
-
-        <form
-            method="POST"
-            action="{{ route('seeders.reset-reseed') }}"
-            class="reset-form"
-            onsubmit="
-                return confirm(
-                    'WARNING: This will delete all users, categories and products. Continue?'
-                )
-            "
-        >
-
-            @csrf
-
-            <input
-                type="text"
-                name="confirmation"
-                placeholder="Type RESET"
-                required
-            >
-
-            <button
-                type="submit"
-                class="btn danger-btn"
-            >
-                Reset &amp; Reseed
-            </button>
-
-        </form>
-
-    </div>
+                    <a
+                        href="{{ route('seeders.index') }}"
+                        class="btn secondary">
+                        Refresh
+                    </a>
 
 
-    {{-- Seeder history --}}
-    <div class="panel">
+                    {{-- Export --}}
 
-        <h3>Seeder Execution History</h3>
+                    <a
+                        href="{{ route('seeders.export') }}"
+                        class="btn blue-btn">
+                        Export CSV
+                    </a>
 
-        @if($recentRuns->count())
 
-            <table>
+                    {{-- Clear History --}}
 
-                <thead>
-                    <tr>
-                        <th>Seeder</th>
-                        <th>Status</th>
-                        <th>Started</th>
-                        <th>Completed</th>
-                        <th>Message</th>
-                    </tr>
-                </thead>
+                    <form
+                        method="POST"
+                        action="{{ route('seeders.clear-history') }}"
+                        style="display:inline;"
+                        onsubmit="return confirm('Delete all seeder execution history?')">
 
-                <tbody>
+                        @csrf
 
-                    @foreach($recentRuns as $run)
+                        @method('DELETE')
+
+                        <button
+                            type="submit"
+                            class="btn danger-btn">
+                            Clear History
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+
+            {{-- =====================================================
+         SEARCH / FILTER
+    ====================================================== --}}
+
+            <form
+                method="GET"
+                action="{{ route('seeders.index') }}"
+                class="filter-form">
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Search seeder...">
+
+
+                <select name="status">
+
+                    <option value="">
+                        All Status
+                    </option>
+
+                    <option
+                        value="success"
+                        {{ request('status') === 'success' ? 'selected' : '' }}>
+                        Success
+                    </option>
+
+                    <option
+                        value="failed"
+                        {{ request('status') === 'failed' ? 'selected' : '' }}>
+                        Failed
+                    </option>
+
+                    <option
+                        value="running"
+                        {{ request('status') === 'running' ? 'selected' : '' }}>
+                        Running
+                    </option>
+
+                </select>
+
+
+                <button
+                    type="submit"
+                    class="btn">
+                    Search
+                </button>
+
+
+                @if(request()->filled('search') || request()->filled('status'))
+
+                <a
+                    href="{{ route('seeders.index') }}"
+                    class="btn secondary">
+                    Clear Filter
+                </a>
+
+                @endif
+
+            </form>
+
+
+            <div style="margin-top: 20px;">
+
+                @if($recentRuns->count())
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                #
+                            </th>
+
+                            <th>
+                                Seeder
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Started
+                            </th>
+
+                            <th>
+                                Completed
+                            </th>
+
+                            <th>
+                                Duration
+                            </th>
+
+                            <th>
+                                Message
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach($recentRuns as $run)
 
                         <tr>
 
                             <td>
+                                {{ $run->id }}
+                            </td>
+
+
+                            <td>
+
                                 <strong>
                                     {{ $run->seeder_name }}
                                 </strong>
+
                             </td>
+
 
                             <td>
 
                                 @if($run->status === 'success')
 
-                                    <span class="badge success-badge">
-                                        Success
-                                    </span>
+                                <span class="badge success-badge">
+                                    Success
+                                </span>
 
                                 @elseif($run->status === 'failed')
 
-                                    <span class="badge failed-badge">
-                                        Failed
-                                    </span>
+                                <span class="badge failed-badge">
+                                    Failed
+                                </span>
 
                                 @else
 
-                                    <span class="badge running-badge">
-                                        Running
-                                    </span>
+                                <span class="badge running-badge">
+                                    Running
+                                </span>
 
                                 @endif
 
                             </td>
 
+
                             <td>
+
                                 {{ $run->started_at?->format('d M Y H:i:s') ?? '-' }}
+
                             </td>
 
+
                             <td>
+
                                 {{ $run->completed_at?->format('d M Y H:i:s') ?? '-' }}
+
                             </td>
 
+
                             <td>
-                                {{ $run->message ?? '-' }}
+
+                                @if($run->started_at && $run->completed_at)
+
+                                {{ $run->started_at->diffInSeconds($run->completed_at) }}
+                                sec
+
+                                @else
+
+                                -
+
+                                @endif
+
+                            </td>
+
+
+                            <td>
+
+                                <div class="message-text">
+
+                                    {{ $run->message ?? '-' }}
+
+                                </div>
+
                             </td>
 
                         </tr>
 
-                    @endforeach
+                        @endforeach
 
-                </tbody>
+                    </tbody>
 
-            </table>
+                </table>
 
-        @else
 
-            <div class="empty">
-                No seeder operations have been performed yet.
+                {{-- =================================================
+                 PAGINATION
+            ================================================== --}}
+
+                @if(method_exists($recentRuns, 'links'))
+
+                <div class="pagination-wrapper">
+
+                    {{ $recentRuns->appends(request()->query())->links() }}
+
+                </div>
+
+                @endif
+
+
+                @else
+
+                <div class="empty">
+
+                    No seeder operations have been performed yet.
+
+                </div>
+
+                @endif
+
             </div>
 
-        @endif
+        </div>
+   
 
     </div>
 
-</div>
-
 </body>
+
 </html>
